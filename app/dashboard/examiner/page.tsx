@@ -8,7 +8,7 @@ export default function ExaminerDashboard() {
   const [profile, setProfile] = useState<any>(null)
   const [entries, setEntries] = useState<any[]>([])
   const [examSessions, setExamSessions] = useState<any[]>([])
-  const [selectedSession, setSelectedSession] = useState<any>(null)
+  const [selectedSession, setSelectedSession] = useState<string | null>(null)
   const [candidates, setCandidates] = useState<any[]>([])
   const [isSwitched, setIsSwitched] = useState(false)
   const router = useRouter()
@@ -49,13 +49,19 @@ export default function ExaminerDashboard() {
   }
 
   async function handleSignOut() {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('switched_role')
+      sessionStorage.removeItem('original_role')
+    }
     await supabase.auth.signOut()
     router.push('/login')
   }
 
   function backToAdmin() {
-    sessionStorage.removeItem('switched_role')
-    sessionStorage.removeItem('original_role')
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('switched_role')
+      sessionStorage.removeItem('original_role')
+    }
     router.push('/dashboard/admin')
   }
 
@@ -104,21 +110,18 @@ export default function ExaminerDashboard() {
             <p className="text-xs text-gray-400 mt-1">Click a session to view registered candidates</p>
           </div>
           <div className="grid grid-cols-2 divide-x divide-gray-100">
-            {/* Sessions */}
             <div>
               {examSessions.length === 0 && <p className="text-center py-8 text-gray-400 text-sm">No exam sessions</p>}
               {examSessions.map(session => (
                 <div key={session.id} onClick={() => loadCandidates(session.id)}
-                  className={`px-6 py-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition ${selectedSession === session.id ? 'bg-orange-50 border-l-4' : 'border-l-4 border-l-transparent'}`}
-                  style={{ borderLeftColor: selectedSession === session.id ? '#7a1515' : 'transparent' }}>
+                  className="px-6 py-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition"
+                  style={{ borderLeft: selectedSession === session.id ? '4px solid #7a1515' : '4px solid transparent', background: selectedSession === session.id ? '#fdf5f5' : '' }}>
                   <p className="font-medium text-gray-800 text-sm">{session.name}</p>
                   <p className="text-xs text-gray-400">{session.courses?.name}</p>
                   <p className="text-xs text-gray-400">{session.exam_date ? new Date(session.exam_date).toLocaleDateString() : 'Date TBD'}</p>
                 </div>
               ))}
             </div>
-
-            {/* Candidates */}
             <div>
               {!selectedSession && (
                 <div className="p-8 text-center text-gray-400">
@@ -132,8 +135,7 @@ export default function ExaminerDashboard() {
               {candidates.map((reg, i) => (
                 <div key={reg.id} className="px-6 py-4 border-b border-gray-50">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                      style={{ background: '#7a1515' }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#7a1515' }}>
                       {i + 1}
                     </div>
                     <div>
@@ -202,9 +204,13 @@ function EntryCard({ entry, onSubmit }: { entry: any, onSubmit: any }) {
         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3" />
       <div className="flex gap-2">
         <button onClick={() => handleSubmit('approved')} disabled={saving}
-          className="text-xs px-3 py-1.5 rounded-lg bg-green-600 text-white font-medium">Approve & Sign Off</button>
+          className="text-xs px-3 py-1.5 rounded-lg bg-green-600 text-white font-medium">
+          Approve & Sign Off
+        </button>
         <button onClick={() => handleSubmit('rejected')} disabled={saving}
-          className="text-xs px-3 py-1.5 rounded-lg bg-red-600 text-white font-medium">Reject</button>
+          className="text-xs px-3 py-1.5 rounded-lg bg-red-600 text-white font-medium">
+          Reject
+        </button>
       </div>
     </div>
   )

@@ -61,38 +61,45 @@ export default function TraineeDashboard() {
 
   function downloadAdmissionCard(courseName: string) {
     const content = `
-POSTGRADUATE INSTITUTE OF MEDICINE
-University of Colombo
-=====================================
-ADMISSION CARD
-=====================================
+================================================
+   POSTGRADUATE INSTITUTE OF MEDICINE
+   University of Colombo
+================================================
+              ADMISSION CARD
+================================================
 Candidate Name : ${profile.full_name}
 Email          : ${profile.email}
 Course         : ${courseName}
-Date Issued    : ${new Date().toLocaleDateString('en-GB')}
+Date Issued    : ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
 Status         : ADMITTED
-=====================================
+================================================
 This admission card confirms your enrolment.
-Please present this at the examination venue.
-=====================================
-PGIM Information Management System
+Please present this card at the examination venue.
+================================================
+PGIM Information Management System © 2026
     `
     const blob = new Blob([content], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `admission-card-${profile.full_name.replace(' ', '-')}.txt`
+    a.download = `PGIM-Admission-Card-${profile.full_name.replace(' ', '-')}.txt`
     a.click()
   }
 
   async function handleSignOut() {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('switched_role')
+      sessionStorage.removeItem('original_role')
+    }
     await supabase.auth.signOut()
     router.push('/login')
   }
 
   function backToAdmin() {
-    sessionStorage.removeItem('switched_role')
-    sessionStorage.removeItem('original_role')
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('switched_role')
+      sessionStorage.removeItem('original_role')
+    }
     router.push('/dashboard/admin')
   }
 
@@ -177,8 +184,12 @@ PGIM Information Management System
                 <div>
                   <p className="font-medium text-gray-800">{app.courses?.name}</p>
                   <div className="flex gap-2 mt-1">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${app.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{app.status}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${app.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{app.payment_status}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${app.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                      {app.status}
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${app.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {app.payment_status}
+                    </span>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -209,12 +220,18 @@ PGIM Information Management System
           <button onClick={() => router.push('/dashboard/trainee/portfolio')}
             className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left hover:shadow-md transition flex items-start gap-4">
             <div className="text-3xl">📁</div>
-            <div><h3 className="font-semibold text-gray-800">My Portfolio</h3><p className="text-sm text-gray-500 mt-1">Add and manage logbook entries</p></div>
+            <div>
+              <h3 className="font-semibold text-gray-800">My Portfolio</h3>
+              <p className="text-sm text-gray-500 mt-1">Add and manage logbook entries</p>
+            </div>
           </button>
           <button onClick={() => router.push('/dashboard/trainee/exams')}
             className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left hover:shadow-md transition flex items-start gap-4">
             <div className="text-3xl">📋</div>
-            <div><h3 className="font-semibold text-gray-800">My Exams</h3><p className="text-sm text-gray-500 mt-1">View and register for exams</p></div>
+            <div>
+              <h3 className="font-semibold text-gray-800">My Exams</h3>
+              <p className="text-sm text-gray-500 mt-1">View and register for exams</p>
+            </div>
           </button>
         </div>
       </div>
