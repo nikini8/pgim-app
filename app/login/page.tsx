@@ -25,6 +25,8 @@ export default function LoginPage() {
         .eq('id', data.user.id)
         .single()
       console.log('Profile result:', profile, profileError)
+      sessionStorage.removeItem('switched_role')
+      sessionStorage.removeItem('original_role')
       if (profile?.role === 'admin') router.push('/dashboard/admin')
       else if (profile?.role === 'examiner') router.push('/dashboard/examiner')
       else if (profile?.role === 'trainee') router.push('/dashboard/trainee')

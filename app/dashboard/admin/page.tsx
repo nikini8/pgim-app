@@ -33,8 +33,9 @@ export default function AdminDashboard() {
     router.push('/login')
   }
 
-  async function switchRole(role: string) {
-    await supabase.from('profiles').update({ role }).eq('id', profile.id)
+  function switchRole(role: string) {
+    sessionStorage.setItem('switched_role', role)
+    sessionStorage.setItem('original_role', 'admin')
     if (role === 'examiner') router.push('/dashboard/examiner')
     else if (role === 'trainee') router.push('/dashboard/trainee')
     setShowRoleSwitch(false)
