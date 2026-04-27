@@ -8,7 +8,9 @@ export default function TraineeExamsPage() {
   const [profile, setProfile] = useState<any>(null)
   const [examSessions, setExamSessions] = useState<any[]>([])
   const [myRegistrations, setMyRegistrations] = useState<any[]>([])
-  const [registering, setRegistering] = useState(false)
+  const [registering, setRegistering] = useState<string | null>(null)
+  const [appealText, setAppealText] = useState<{ [key: string]: string }>({})
+  const [toast, setToast] = useState('')
   const router = useRouter()
 
   useEffect(() => {
@@ -16,31 +18,48 @@ export default function TraineeExamsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
       const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      if (!p || p.role !== 'trainee') { router.push('/login'); return }
       setProfile(p)
-      const { data: e } = await supabase.from('exam_sessions').select('*, courses(name)').order('created_at', {ascending: false})
-      setExamSessions(e || [])
-      const { data: r } = await supabase.from('exam_registrations').select('*, exam_sessions(name, courses(name))').eq('candidate_id', user.id)
-      setMyRegistrations(r || [])
+      loadData(user.id)
     }
     load()
   }, [])
 
-  async function registerForExam(examId: string) {
+  async function loadData(userId: string) {
+    const { data: e } = await supabase.from('exam_sessions').select('*, courses(name)').order('created_at', { ascending: false })
+    setExamSessions(e || [])
+    const { data: r } = await supabase.from('exam_registrations')
+      .select('*, exam_sessions(name, exam_date, courses(name))').eq('candidate_id', userId)
+    setMyRegistrations(r || [])
+  }
+
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3000)
+  }
+
+  async function registerAndPay(examId: string) {
     if (!profile) return
-    setRegistering(true)
+    setRegistering(examId)
     await supabase.from('exam_registrations').insert({
       candidate_id: profile.id,
       exam_session_id: examId,
     })
-    const { data: r } = await supabase.from('exam_registrations').select('*, exam_sessions(name, courses(name))').eq('candidate_id', profile.id)
-    setMyRegistrations(r || [])
-    setRegistering(false)
+    await loadData(profile.id)
+    setRegistering(null)
+    showToast('Registered and mock payment confirmed! Admission card will be issued.')
   }
 
   async function submitAppeal(regId: string) {
-    await supabase.from('exam_registrations').update({appeal_status: 'pending'}).eq('id', regId)
-    const { data: r } = await supabase.from('exam_registrations').select('*, exam_sessions(name, courses(name))').eq('candidate_id', profile.id)
-    setMyRegistrations(r || [])
+    const text = appealText[regId]
+    if (!text) return
+    await supabase.from('exam_registrations').update({
+      appeal_status: 'pending',
+      appeal_text: text
+    }).eq('id', regId)
+    await loadData(profile.id)
+    showToast('Appeal submitted successfully')
+    setAppealText(prev => ({ ...prev, [regId]: '' }))
   }
 
   if (!profile) return <div className="min-h-screen flex items-center justify-center"><p>Loading...</p></div>
@@ -48,36 +67,44 @@ export default function TraineeExamsPage() {
   const registeredExamIds = myRegistrations.map(r => r.exam_session_id)
 
   return (
-    <div className="min-h-screen" style={{background:'#f9f5f0'}}>
-      <header className="text-white px-8 py-4 flex items-center justify-between shadow" style={{background:'linear-gradient(135deg, #7a1515, #4a0a0a)'}}>
+    <div className="min-h-screen" style={{ background: '#f9f5f0' }}>
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 text-white px-5 py-3 rounded-xl shadow-lg font-medium text-sm" style={{ background: '#15803D' }}>
+          ✓ {toast}
+        </div>
+      )}
+
+      <header className="text-white px-8 py-4 flex items-center justify-between shadow" style={{ background: 'linear-gradient(135deg, #7a1515, #4a0a0a)' }}>
         <div className="flex items-center gap-3">
           <Image src="/logo.png" alt="PGIM" width={45} height={45} />
           <div><h1 className="font-bold text-lg">PGIM</h1><p className="text-xs opacity-75">Information Management System</p></div>
         </div>
-        <button onClick={() => router.push('/dashboard/trainee')} className="text-xs px-3 py-1 rounded border border-white/30 hover:bg-white/10">← Back to Dashboard</button>
+        <button onClick={() => router.push('/dashboard/trainee')} className="text-xs px-3 py-1 rounded border border-white/30 hover:bg-white/10">← Back</button>
       </header>
 
       <div className="max-w-5xl mx-auto px-8 py-8">
-        <h2 className="text-2xl font-bold mb-6" style={{color:'#7a1515'}}>My Exams</h2>
+        <h2 className="text-2xl font-bold mb-6" style={{ color: '#7a1515' }}>Examinations</h2>
 
         {/* Available Exams */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
           <h3 className="font-semibold text-gray-700 mb-4">Available Exam Sessions</h3>
-          {examSessions.length === 0 && <p className="text-gray-400 text-sm">No exam sessions available</p>}
+          {examSessions.length === 0 && <p className="text-gray-400 text-sm">No exam sessions available yet</p>}
           <div className="flex flex-col gap-3">
             {examSessions.map(exam => (
-              <div key={exam.id} className="flex items-center justify-between p-4 rounded-lg" style={{background:'#f9f5f0'}}>
+              <div key={exam.id} className="flex items-center justify-between p-4 rounded-lg" style={{ background: '#f9f5f0' }}>
                 <div>
                   <p className="font-medium text-gray-800">{exam.name}</p>
-                  <p className="text-xs text-gray-500">{exam.courses?.name} • {exam.exam_date ? new Date(exam.exam_date).toLocaleDateString() : 'Date TBD'}</p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${exam.status === 'upcoming' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>{exam.status}</span>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {exam.courses?.name} • {exam.exam_date ? new Date(exam.exam_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date TBD'}
+                  </p>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 mt-1 inline-block">{exam.status}</span>
                 </div>
                 {registeredExamIds.includes(exam.id) ? (
-                  <span className="text-xs px-3 py-1 rounded-full bg-green-100 text-green-700">Registered</span>
+                  <span className="text-xs px-3 py-1 rounded-full bg-green-100 text-green-700 font-medium">✓ Registered</span>
                 ) : (
-                  <button onClick={() => registerForExam(exam.id)} disabled={registering}
-                    className="text-xs px-4 py-2 rounded-lg text-white font-medium" style={{background:'#7a1515'}}>
-                    Register & Pay
+                  <button onClick={() => registerAndPay(exam.id)} disabled={registering === exam.id}
+                    className="text-xs px-4 py-2 rounded-lg text-white font-medium" style={{ background: '#7a1515' }}>
+                    {registering === exam.id ? 'Processing...' : 'Register & Pay (Mock)'}
                   </button>
                 )}
               </div>
@@ -89,28 +116,52 @@ export default function TraineeExamsPage() {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <h3 className="font-semibold text-gray-700 mb-4">My Exam Results</h3>
           {myRegistrations.length === 0 && <p className="text-gray-400 text-sm">No exam registrations yet</p>}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {myRegistrations.map(reg => (
-              <div key={reg.id} className="flex items-center justify-between p-4 rounded-lg" style={{background:'#f9f5f0'}}>
-                <div>
-                  <p className="font-medium text-gray-800">{reg.exam_sessions?.name}</p>
-                  <p className="text-xs text-gray-500">{reg.exam_sessions?.courses?.name}</p>
-                  {reg.result && (
-                    <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block font-medium ${reg.result === 'pass' ? 'bg-green-100 text-green-700' : reg.result === 'fail' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>
-                      {reg.result === 'pass' ? '✓ Pass' : reg.result === 'fail' ? '✗ Fail' : 'Result Pending'}
-                    </span>
+              <div key={reg.id} className="p-4 rounded-lg border border-gray-100" style={{ background: '#f9f5f0' }}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium text-gray-800">{reg.exam_sessions?.name}</p>
+                    <p className="text-xs text-gray-500">{reg.exam_sessions?.courses?.name}</p>
+                    <div className="mt-2">
+                      {!reg.result ? (
+                        <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500">
+                          Results not published yet
+                        </span>
+                      ) : (
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${reg.result === 'pass' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                          {reg.result === 'pass' ? '✓ Pass' : '✗ Fail'}
+                        </span>
+                      )}
+                      {reg.appeal_status && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 ml-2">
+                          Appeal: {reg.appeal_status}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {!reg.result && (
+                    <span className="text-xs text-gray-400">Admission card issued</span>
                   )}
-                  {reg.appeal_status && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 ml-2">Appeal: {reg.appeal_status}</span>}
                 </div>
-                <div className="flex gap-2">
-                  {reg.result === 'fail' && !reg.appeal_status && (
+
+                {/* Appeal section - only show if result is fail and no appeal yet */}
+                {reg.result === 'fail' && !reg.appeal_status && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <p className="text-xs font-medium text-gray-600 mb-2">Submit Appeal / Rechecking Request</p>
+                    <textarea
+                      value={appealText[reg.id] || ''}
+                      onChange={e => setAppealText(prev => ({ ...prev, [reg.id]: e.target.value }))}
+                      placeholder="Explain the grounds for your appeal..."
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-2" rows={2} />
                     <button onClick={() => submitAppeal(reg.id)}
-                      className="text-xs px-3 py-1 rounded border font-medium" style={{borderColor:'#7a1515', color:'#7a1515'}}>
+                      disabled={!appealText[reg.id]}
+                      className="text-xs px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50"
+                      style={{ background: '#7a1515' }}>
                       Submit Appeal
                     </button>
-                  )}
-                  {!reg.result && <span className="text-xs text-gray-400">Admission card will be sent</span>}
-                </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
