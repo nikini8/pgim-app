@@ -51,12 +51,13 @@ export default function LoginPage() {
           <div>
             <label className="text-sm font-medium text-gray-700">Email Address</label>
             <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="mt-1 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none"
-              placeholder="you@pgim.lk"
-              required
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="mt-1 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none"
+            placeholder="you@pgim.lk"
+            style={{color: '#1f2937', backgroundColor: 'white'}}
+            required
             />
           </div>
           <div>
