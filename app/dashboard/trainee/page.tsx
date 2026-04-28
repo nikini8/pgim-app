@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
+import jsPDF from 'jspdf'
 
 export default function TraineeDashboard() {
   const [profile, setProfile] = useState<any>(null)
@@ -81,57 +82,158 @@ export default function TraineeDashboard() {
 
   function downloadAdmissionCard() {
     if (!admissionCard) return
-    const content = `
-================================================
-   POSTGRADUATE INSTITUTE OF MEDICINE
-   University of Colombo
-================================================
-              ADMISSION CARD
-================================================
-Reference No   : ${admissionCard.ref}
-Candidate Name : ${admissionCard.name}
-NIC            : ${admissionCard.nic}
-SLMC Reg. No   : ${admissionCard.slmc}
-Email          : ${admissionCard.email}
-Course         : ${admissionCard.course}
-Date Issued    : ${admissionCard.date}
-Status         : ADMITTED
-================================================
-This card confirms your enrolment.
-Present this at the examination venue.
-================================================
-PGIM Information Management System © 2026
-    `
-    const blob = new Blob([content], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `PGIM-Admission-${admissionCard.ref}.txt`
-    a.click()
+    const doc = new jsPDF()
+    
+    // Border
+    doc.setDrawColor(122, 21, 21)
+    doc.setLineWidth(2)
+    doc.rect(10, 10, 190, 277)
+    doc.setLineWidth(0.5)
+    doc.rect(13, 13, 184, 271)
+    
+    // Header background
+    doc.setFillColor(122, 21, 21)
+    doc.rect(10, 10, 190, 35, 'F')
+    
+    // Logo placeholder circle
+    doc.setFillColor(196, 160, 32)
+    doc.circle(30, 27, 10, 'F')
+    
+    // Header text
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.text('POSTGRADUATE INSTITUTE OF MEDICINE', 105, 22, { align: 'center' })
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    doc.text('University of Colombo, Sri Lanka', 105, 30, { align: 'center' })
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.text('ADMISSION CARD', 105, 40, { align: 'center' })
+    
+    // Divider
+    doc.setDrawColor(196, 160, 32)
+    doc.setLineWidth(1)
+    doc.line(20, 50, 190, 50)
+    
+    // Reference number
+    doc.setTextColor(122, 21, 21)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text(`Reference No: ${admissionCard.ref}`, 105, 60, { align: 'center' })
+    
+    // Details
+    doc.setTextColor(0, 0, 0)
+    doc.setFontSize(10)
+    const details = [
+      ['Candidate Name', admissionCard.name],
+      ['Email Address', admissionCard.email],
+      ['Course', admissionCard.course],
+      ['Date Issued', admissionCard.date],
+      ['Enrolment Status', 'ADMITTED'],
+    ]
+    let y = 75
+    details.forEach(([label, value]) => {
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(100, 100, 100)
+      doc.text(label + ':', 25, y)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(0, 0, 0)
+      doc.text(value || '', 90, y)
+      doc.setDrawColor(220, 220, 220)
+      doc.line(25, y + 3, 185, y + 3)
+      y += 15
+    })
+    
+    // Status badge
+    doc.setFillColor(220, 252, 231)
+    doc.roundedRect(70, y + 5, 70, 12, 3, 3, 'F')
+    doc.setTextColor(21, 128, 61)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(11)
+    doc.text('✓ ADMITTED', 105, y + 13, { align: 'center' })
+    
+    // Footer
+    doc.setTextColor(100, 100, 100)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.text('This admission card confirms your enrolment at PGIM.', 105, 250, { align: 'center' })
+    doc.text('Please present this card at the examination venue.', 105, 256, { align: 'center' })
+    doc.text('PGIM Information Management System © 2026', 105, 270, { align: 'center' })
+    
+    doc.save(`PGIM-Admission-${admissionCard.ref}.pdf`)
   }
 
   function downloadExistingCard(app: any) {
-    const content = `
-================================================
-   POSTGRADUATE INSTITUTE OF MEDICINE
-   University of Colombo
-================================================
-              ADMISSION CARD
-================================================
-Candidate Name : ${profile.full_name}
-Email          : ${profile.email}
-Course         : ${app.courses?.name}
-Date Issued    : ${new Date().toLocaleDateString('en-GB')}
-Status         : ADMITTED
-================================================
-PGIM Information Management System © 2026
-    `
-    const blob = new Blob([content], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `PGIM-Admission-${app.courses?.name?.replace(/\s/g, '-')}.txt`
-    a.click()
+    const doc = new jsPDF()
+    const ref = 'PGIM-' + app.id?.slice(-6).toUpperCase()
+    
+    doc.setDrawColor(122, 21, 21)
+    doc.setLineWidth(2)
+    doc.rect(10, 10, 190, 277)
+    doc.setLineWidth(0.5)
+    doc.rect(13, 13, 184, 271)
+    
+    doc.setFillColor(122, 21, 21)
+    doc.rect(10, 10, 190, 35, 'F')
+    
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.text('POSTGRADUATE INSTITUTE OF MEDICINE', 105, 22, { align: 'center' })
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    doc.text('University of Colombo, Sri Lanka', 105, 30, { align: 'center' })
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.text('ADMISSION CARD', 105, 40, { align: 'center' })
+    
+    doc.setDrawColor(196, 160, 32)
+    doc.setLineWidth(1)
+    doc.line(20, 50, 190, 50)
+    
+    doc.setTextColor(122, 21, 21)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text(`Reference No: ${ref}`, 105, 60, { align: 'center' })
+    
+    doc.setTextColor(0, 0, 0)
+    doc.setFontSize(10)
+    const details = [
+      ['Candidate Name', profile.full_name],
+      ['Email Address', profile.email],
+      ['Course', app.courses?.name],
+      ['Date Issued', new Date().toLocaleDateString('en-GB')],
+      ['Enrolment Status', 'ADMITTED'],
+    ]
+    let y = 75
+    details.forEach(([label, value]) => {
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(100, 100, 100)
+      doc.text(label + ':', 25, y)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(0, 0, 0)
+      doc.text(value || '', 90, y)
+      doc.setDrawColor(220, 220, 220)
+      doc.line(25, y + 3, 185, y + 3)
+      y += 15
+    })
+    
+    doc.setFillColor(220, 252, 231)
+    doc.roundedRect(70, y + 5, 70, 12, 3, 3, 'F')
+    doc.setTextColor(21, 128, 61)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(11)
+    doc.text('✓ ADMITTED', 105, y + 13, { align: 'center' })
+    
+    doc.setTextColor(100, 100, 100)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.text('This admission card confirms your enrolment at PGIM.', 105, 250, { align: 'center' })
+    doc.text('Please present this card at the examination venue.', 105, 256, { align: 'center' })
+    doc.text('PGIM Information Management System © 2026', 105, 270, { align: 'center' })
+    
+    doc.save(`PGIM-Admission-${ref}.pdf`)
   }
 
   async function handleSignOut() {
