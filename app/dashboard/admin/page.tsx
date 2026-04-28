@@ -107,24 +107,25 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            { title: 'Manage Courses', desc: 'View admitted students, open/close registration', href: '/dashboard/admin/courses', icon: '📚' },
-            { title: 'Applications', desc: 'View and manage candidate applications', href: '/dashboard/admin/applications', icon: '📝' },
-            { title: 'Exam Sessions', desc: 'Create exams, publish results, process appeals', href: '/dashboard/admin/exams', icon: '📋' },
-            { title: 'Reports & Analytics', desc: 'Enrolment, pass rates, portfolio completion', href: '/dashboard/admin/reports', icon: '📊' },
-            { title: 'Audit Log', desc: 'View system activity and user action history', href: '/dashboard/admin/audit', icon: '🔍' },
-            { title: 'Switch Role', desc: 'View system as Examiner or Trainee', onClick: () => setShowRoleSwitch(true), icon: '⇄' },
-          ].map(card => (
-            <button key={card.title}
-              onClick={() => card.onClick ? card.onClick() : router.push(card.href!)}
-              className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left hover:shadow-md transition flex items-start gap-4">
-              <div className="text-3xl">{card.icon}</div>
-              <div>
-                <h3 className="font-semibold text-gray-800">{card.title}</h3>
-                <p className="text-sm text-gray-500 mt-1">{card.desc}</p>
-              </div>
-            </button>
-          ))}
+        {[
+          { title: 'Manage Courses', desc: 'View admitted students, open/close registration', href: '/dashboard/admin/courses', icon: '📚' },
+          { title: 'Applications', desc: 'View and manage candidate applications', href: '/dashboard/admin/applications', icon: '📝' },
+          { title: 'Exam Sessions', desc: 'Create exams, publish results, process appeals', href: '/dashboard/admin/exams', icon: '📋' },
+          { title: 'Portfolio Completion', desc: 'Monitor portfolio submissions across candidates', href: '/dashboard/admin/portfolio', icon: '📁' },
+          { title: 'Reports & Analytics', desc: 'Enrolment, pass rates, portfolio completion', href: '/dashboard/admin/reports', icon: '📊' },
+          { title: 'Audit Log', desc: 'View system activity and user action history', href: '/dashboard/admin/audit', icon: '🔍' },
+          { title: 'Switch Role', desc: 'View system as Examiner or Trainee', onClick: () => setShowRoleSwitch(true), icon: '⇄' },
+        ].map(card => (
+          <button key={card.title}
+          onClick={() => card.onClick ? card.onClick() : router.push(card.href!)}
+          className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left hover:shadow-md transition flex items-start gap-4">
+            <div className="text-3xl">{card.icon}</div>
+            <div>
+              <h3 className="font-semibold text-gray-800">{card.title}</h3>
+              <p className="text-sm text-gray-500 mt-1">{card.desc}</p>
+            </div>
+        </button>
+      ))}
         </div>
       </div>
     </div>
