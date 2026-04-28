@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
+import jsPDF from 'jspdf'
 
 export default function TraineeExamsPage() {
   const [profile, setProfile] = useState<any>(null)
@@ -83,33 +84,76 @@ export default function TraineeExamsPage() {
 
   function downloadSlip() {
     if (!admissionSlip) return
-    const content = `
-================================================
-   POSTGRADUATE INSTITUTE OF MEDICINE
-   University of Colombo
-================================================
-           EXAM ADMISSION SLIP
-================================================
-Reference No   : ${admissionSlip.ref}
-Candidate Name : ${admissionSlip.name}
-NIC Number     : ${admissionSlip.nic}
-SLMC Reg. No   : ${admissionSlip.slmc}
-Exam Session   : ${admissionSlip.exam}
-Course         : ${admissionSlip.course}
-Exam Date      : ${admissionSlip.date}
-Date Issued    : ${admissionSlip.issued}
-Status         : REGISTERED
-================================================
-Present this slip at the examination venue.
-================================================
-PGIM Information Management System © 2026
-    `
-    const blob = new Blob([content], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `PGIM-Exam-Slip-${admissionSlip.ref}.txt`
-    a.click()
+    const doc = new jsPDF()
+
+    doc.setDrawColor(122, 21, 21)
+    doc.setLineWidth(2)
+    doc.rect(10, 10, 190, 277)
+    doc.setLineWidth(0.5)
+    doc.rect(13, 13, 184, 271)
+
+    doc.setFillColor(122, 21, 21)
+    doc.rect(10, 10, 190, 35, 'F')
+
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.text('POSTGRADUATE INSTITUTE OF MEDICINE', 105, 22, { align: 'center' })
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    doc.text('University of Colombo, Sri Lanka', 105, 30, { align: 'center' })
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.text('EXAM ADMISSION SLIP', 105, 40, { align: 'center' })
+
+    doc.setDrawColor(196, 160, 32)
+    doc.setLineWidth(1)
+    doc.line(20, 50, 190, 50)
+
+    doc.setTextColor(122, 21, 21)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text(`Reference No: ${admissionSlip.ref}`, 105, 60, { align: 'center' })
+
+    doc.setTextColor(0, 0, 0)
+    doc.setFontSize(10)
+    const details = [
+      ['Candidate Name', admissionSlip.name],
+      ['NIC Number', admissionSlip.nic],
+      ['SLMC Reg. No', admissionSlip.slmc],
+      ['Exam Session', admissionSlip.exam],
+      ['Course', admissionSlip.course],
+      ['Exam Date', admissionSlip.date],
+      ['Date Issued', admissionSlip.issued],
+      ['Status', 'REGISTERED'],
+    ]
+    let y = 75
+    details.forEach(([label, value]) => {
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(100, 100, 100)
+      doc.text(label + ':', 25, y)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(0, 0, 0)
+      doc.text(value || '', 90, y)
+      doc.setDrawColor(220, 220, 220)
+      doc.line(25, y + 3, 185, y + 3)
+      y += 15
+    })
+
+    doc.setFillColor(220, 252, 231)
+    doc.roundedRect(70, y + 5, 70, 12, 3, 3, 'F')
+    doc.setTextColor(21, 128, 61)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(11)
+    doc.text('✓ REGISTERED', 105, y + 13, { align: 'center' })
+
+    doc.setTextColor(100, 100, 100)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Present this slip at the examination venue.', 105, 258, { align: 'center' })
+    doc.text('PGIM Information Management System © 2026', 105, 264, { align: 'center' })
+
+    doc.save(`PGIM-Exam-Slip-${admissionSlip.ref}.pdf`)
   }
 
   async function submitAppeal(regId: string) {
