@@ -114,7 +114,6 @@ export default function AdminDashboard() {
           { title: 'Portfolio Completion', desc: 'Monitor portfolio submissions across candidates', href: '/dashboard/admin/portfolio', icon: '📁' },
           { title: 'Reports & Analytics', desc: 'Enrolment, pass rates, portfolio completion', href: '/dashboard/admin/reports', icon: '📊' },
           { title: 'Audit Log', desc: 'View system activity and user action history', href: '/dashboard/admin/audit', icon: '🔍' },
-          { title: 'Switch Role', desc: 'View system as Examiner or Trainee', onClick: () => setShowRoleSwitch(true), icon: '⇄' },
         ].map(card => (
           <button key={card.title}
           onClick={() => card.onClick ? card.onClick() : router.push(card.href!)}
