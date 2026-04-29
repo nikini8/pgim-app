@@ -43,3 +43,10 @@ input:-webkit-autofill:active {
   -webkit-text-fill-color: #1f2937 !important;
   -webkit-box-shadow: 0 0 0 30px white inset !important;
 }
+
+/* Crop the PGIM header logo into a circle to remove square corners. */
+header img[alt="PGIM"] {
+  border-radius: 9999px;
+  object-fit: cover;
+}
+

@@ -86,7 +86,7 @@ export default function ExaminerDashboard() {
     <div className="min-h-screen" style={{ background: '#f9f5f0' }}>
       <header className="text-white px-8 py-4 flex items-center justify-between shadow" style={{ background: 'linear-gradient(135deg, #7a1515, #4a0a0a)' }}>
         <div className="flex items-center gap-3">
-          <Image src="/logo.png" alt="PGIM" width={45} height={45} />
+          <Image src="/logo-user-transparent-v1.png" alt="PGIM" width={45} height={45} className="rounded-full object-cover" />
           <div><h1 className="font-bold text-lg">PGIM</h1><p className="text-xs opacity-75">Information Management System</p></div>
         </div>
         <div className="flex items-center gap-4">
