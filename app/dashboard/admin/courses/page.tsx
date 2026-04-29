@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<any[]>([])
@@ -67,6 +69,30 @@ export default function CoursesPage() {
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = `${selectedCourse?.name}-students.csv`; a.click()
+  }
+
+  function exportPDF() {
+    const doc = new jsPDF()
+    doc.setFontSize(16); doc.setTextColor(122, 21, 21)
+    doc.text('PGIM Information Management System', 14, 15)
+    doc.setFontSize(12); doc.setTextColor(0, 0, 0)
+    doc.text(`Admitted Students — ${selectedCourse?.name}`, 14, 25)
+    doc.setFontSize(9); doc.setTextColor(100, 100, 100)
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}`, 14, 32)
+    autoTable(doc, {
+      startY: 38,
+      head: [['#', 'Name', 'Email', 'Payment Status']],
+      body: admittedStudents.map((s, i) => [
+        i + 1,
+        s.profiles?.full_name || '',
+        s.profiles?.email || '',
+        s.payment_status || ''
+      ]),
+      headStyles: { fillColor: [122, 21, 21], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [249, 245, 240] },
+      styles: { fontSize: 9, cellPadding: 3 },
+    })
+    doc.save(`${selectedCourse?.name}-students.pdf`)
   }
 
   return (
@@ -157,6 +183,20 @@ export default function CoursesPage() {
                     className="text-xs px-3 py-1.5 rounded-lg text-white font-medium" style={{ background: '#c4a020' }}>
                     Export CSV
                   </button>
+
+{selectedCourse && admittedStudents.length > 0 && (
+  <div className="flex gap-2">
+    <button onClick={exportCSV}
+      className="text-xs px-3 py-1.5 rounded-lg text-white font-medium" style={{ background: '#c4a020' }}>
+      Export CSV
+    </button>
+    <button onClick={exportPDF}
+      className="text-xs px-3 py-1.5 rounded-lg text-white font-medium" style={{ background: '#7a1515' }}>
+      Export PDF
+    </button>
+  </div>
+)}
+              
                 )}
               </div>
 
