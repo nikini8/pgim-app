@@ -76,7 +76,7 @@ export default function CoursesPage() {
     doc.setFontSize(16); doc.setTextColor(122, 21, 21)
     doc.text('PGIM Information Management System', 14, 15)
     doc.setFontSize(12); doc.setTextColor(0, 0, 0)
-    doc.text(`Admitted Students — ${selectedCourse?.name}`, 14, 25)
+    doc.text(`Admitted Students - ${selectedCourse?.name}`, 14, 25)
     doc.setFontSize(9); doc.setTextColor(100, 100, 100)
     doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}`, 14, 32)
     autoTable(doc, {
@@ -105,7 +105,7 @@ export default function CoursesPage() {
 
       <header className="text-white px-8 py-4 flex items-center justify-between shadow" style={{ background: 'linear-gradient(135deg, #7a1515, #4a0a0a)' }}>
         <div className="flex items-center gap-3">
-          <Image src="/logo-user-transparent-v1.png" alt="PGIM" width={45} height={45} className="rounded-full object-cover" />
+          <Image src="/logo.png" alt="PGIM" width={45} height={45} />
           <div><h1 className="font-bold text-lg">PGIM</h1><p className="text-xs opacity-75">Information Management System</p></div>
         </div>
         <button onClick={() => router.push('/dashboard/admin')} className="text-xs px-3 py-1 rounded border border-white/30 hover:bg-white/10">← Back to Dashboard</button>
@@ -120,15 +120,14 @@ export default function CoursesPage() {
           </button>
         </div>
 
-        {/* Add Course Form */}
         {showAddForm && (
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
             <h3 className="font-semibold text-gray-700 mb-4">Add New Course</h3>
             <div className="flex gap-3">
               <input value={newCourse.name} onChange={e => setNewCourse({ ...newCourse, name: e.target.value })}
-                placeholder="Course name" className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm" />
+                placeholder="Course name" className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-800" />
               <input value={newCourse.description} onChange={e => setNewCourse({ ...newCourse, description: e.target.value })}
-                placeholder="Description" className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm" />
+                placeholder="Description" className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-800" />
               <button onClick={addCourse} disabled={adding || !newCourse.name}
                 className="px-5 py-2 rounded-lg text-white text-sm font-medium disabled:opacity-50" style={{ background: '#7a1515' }}>
                 {adding ? 'Adding...' : 'Add'}
@@ -142,7 +141,6 @@ export default function CoursesPage() {
         )}
 
         <div className="grid grid-cols-3 gap-6">
-          {/* Course List */}
           <div className="col-span-1">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-100">
@@ -151,8 +149,8 @@ export default function CoursesPage() {
               {loading && <p className="text-center py-6 text-gray-400 text-sm">Loading...</p>}
               {courses.map(course => (
                 <div key={course.id} onClick={() => selectCourse(course)}
-                  className={`px-4 py-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition ${selectedCourse?.id === course.id ? 'border-l-4' : 'border-l-4 border-l-transparent'}`}
-                  style={{ borderLeftColor: selectedCourse?.id === course.id ? '#7a1515' : 'transparent' }}>
+                  className="px-4 py-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition"
+                  style={{ borderLeft: selectedCourse?.id === course.id ? '4px solid #7a1515' : '4px solid transparent', background: selectedCourse?.id === course.id ? '#fdf5f5' : '' }}>
                   <p className="font-medium text-gray-800 text-sm">{course.name}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{course.description}</p>
                   <div className="flex items-center justify-between mt-2">
@@ -171,7 +169,6 @@ export default function CoursesPage() {
             </div>
           </div>
 
-          {/* Admitted Students */}
           <div className="col-span-2">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -179,24 +176,16 @@ export default function CoursesPage() {
                   {selectedCourse ? `Admitted Students — ${selectedCourse.name}` : 'Select a course to view students'}
                 </h3>
                 {selectedCourse && admittedStudents.length > 0 && (
-                  <button onClick={exportCSV}
-                    className="text-xs px-3 py-1.5 rounded-lg text-white font-medium" style={{ background: '#c4a020' }}>
-                    Export CSV
-                  </button>
-
-{selectedCourse && admittedStudents.length > 0 && (
-  <div className="flex gap-2">
-    <button onClick={exportCSV}
-      className="text-xs px-3 py-1.5 rounded-lg text-white font-medium" style={{ background: '#c4a020' }}>
-      Export CSV
-    </button>
-    <button onClick={exportPDF}
-      className="text-xs px-3 py-1.5 rounded-lg text-white font-medium" style={{ background: '#7a1515' }}>
-      Export PDF
-    </button>
-  </div>
-)}
-              
+                  <div className="flex gap-2">
+                    <button onClick={exportCSV}
+                      className="text-xs px-3 py-1.5 rounded-lg text-white font-medium" style={{ background: '#c4a020' }}>
+                      Export CSV
+                    </button>
+                    <button onClick={exportPDF}
+                      className="text-xs px-3 py-1.5 rounded-lg text-white font-medium" style={{ background: '#7a1515' }}>
+                      Export PDF
+                    </button>
+                  </div>
                 )}
               </div>
 
