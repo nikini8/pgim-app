@@ -12,14 +12,18 @@ export default function TraineeDashboard() {
   const router = useRouter()
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setIsSwitched(!!sessionStorage.getItem('switched_role'))
-    }
+    const switched = typeof window !== 'undefined' && !!sessionStorage.getItem('switched_role')
+    setIsSwitched(switched)
+
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
       const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (!p) { router.push('/login'); return }
+      if (!switched && p.role !== 'trainee') {
+        router.push('/dashboard/' + p.role)
+        return
+      }
       setProfile(p)
       const { data: c } = await supabase.from('courses').select('*').eq('registration_open', true)
       setCourses(c || [])
@@ -88,7 +92,6 @@ export default function TraineeDashboard() {
 
         {/* 4 Navigation Cards */}
         <div className="grid grid-cols-2 gap-4">
-          {/* Course Registration */}
           <button onClick={() => router.push('/dashboard/trainee/courses')}
             className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left hover:shadow-md transition">
             <div className="flex items-start gap-4 mb-3">
@@ -103,7 +106,6 @@ export default function TraineeDashboard() {
             </div>
           </button>
 
-          {/* My Enrolments */}
           <button onClick={() => router.push('/dashboard/trainee/enrolments')}
             className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left hover:shadow-md transition">
             <div className="flex items-start gap-4 mb-3">
@@ -120,7 +122,6 @@ export default function TraineeDashboard() {
             </div>
           </button>
 
-          {/* My e-Portfolio */}
           <button onClick={() => router.push('/dashboard/trainee/portfolio')}
             className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left hover:shadow-md transition">
             <div className="flex items-start gap-4 mb-3">
@@ -138,7 +139,6 @@ export default function TraineeDashboard() {
             </div>
           </button>
 
-          {/* Examinations */}
           <button onClick={() => router.push('/dashboard/trainee/exams')}
             className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left hover:shadow-md transition">
             <div className="flex items-start gap-4 mb-3">
@@ -152,7 +152,7 @@ export default function TraineeDashboard() {
               <div className="flex gap-1">
                 <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">Register</span>
                 <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">Results</span>
-              </div>  
+              </div>
             </div>
           </button>
         </div>
