@@ -104,7 +104,7 @@ export default function TraineeDashboard() {
           </button>
 
           {/* My Enrolments */}
-          <button onClick={() => router.push('/dashboard/trainee/courses?tab=enrolled')}
+          <button onClick={() => router.push('/dashboard/trainee/enrolments')}
             className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left hover:shadow-md transition">
             <div className="flex items-start gap-4 mb-3">
               <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl flex-shrink-0" style={{ background: '#f0fdf4' }}>🎓</div>
@@ -152,7 +152,7 @@ export default function TraineeDashboard() {
               <div className="flex gap-1">
                 <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">Register</span>
                 <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">Results</span>
-              </div>
+              </div>  
             </div>
           </button>
         </div>
