@@ -45,12 +45,11 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen" style={{ background: '#f9f5f0' }}>
-      {/* Role Switch Modal */}
       {showRoleSwitch && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
             <h3 className="font-bold text-lg mb-2" style={{ color: '#7a1515' }}>Switch Role View</h3>
-            <p className="text-sm text-gray-500 mb-6">View the system from another role's perspective. You can switch back anytime.</p>
+            <p className="text-sm text-gray-500 mb-6">View the system from another role's perspective.</p>
             <div className="flex flex-col gap-3 mb-6">
               {[
                 { role: 'examiner', label: 'Examiner / Supervisor', icon: '📋', desc: 'Portfolio review, exam candidate access' },
@@ -76,7 +75,7 @@ export default function AdminDashboard() {
 
       <header className="text-white px-8 py-4 flex items-center justify-between shadow" style={{ background: 'linear-gradient(135deg, #7a1515, #4a0a0a)' }}>
         <div className="flex items-center gap-3">
-          <Image src="/logo-user-transparent-v1.png" alt="PGIM" width={45} height={45} className="rounded-full object-cover" />
+          <Image src="/logo.png" alt="PGIM" width={45} height={45} />
           <div><h1 className="font-bold text-lg">PGIM</h1><p className="text-xs opacity-75">Information Management System</p></div>
         </div>
         <div className="flex items-center gap-4">
@@ -107,26 +106,26 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  {[
-    { title: 'Manage Courses', desc: 'View admitted students, open/close registration', href: '/dashboard/admin/courses', icon: '📚' },
-    { title: 'Applications', desc: 'View and manage candidate applications', href: '/dashboard/admin/applications', icon: '📝' },
-    { title: 'Exam Sessions', desc: 'Create exams, publish results, process appeals', href: '/dashboard/admin/exams', icon: '📋' },
-    { title: 'Portfolio Completion', desc: 'Monitor portfolio submissions across candidates', href: '/dashboard/admin/portfolio', icon: '📁' },
-    { title: 'Reports & Analytics', desc: 'Enrolment, pass rates, portfolio completion', href: '/dashboard/admin/reports', icon: '📊' },
-    { title: 'Audit Log', desc: 'View system activity and user action history', href: '/dashboard/admin/audit', icon: '🔍' },
-    { title: 'Candidate Enrolment', desc: 'Create candidate accounts', href: '/dashboard/admin/candidate', icon: '👤' },
-  ].map(card => (
-    <button key={card.title}
-      onClick={() => router.push(card.href)}
-      className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left hover:shadow-md transition flex items-start gap-4">
-      <div className="text-3xl">{card.icon}</div>
-      <div>
-        <h3 className="font-semibold text-gray-800">{card.title}</h3>
-        <p className="text-sm text-gray-500 mt-1">{card.desc}</p>
-      </div>
-    </button>
-  ))}
-</div>
+          {[
+            { title: 'Candidate Management', desc: 'Create and manage candidate accounts', href: '/dashboard/admin/candidates', icon: '👤' },
+            { title: 'Manage Courses', desc: 'View admitted students, open/close registration', href: '/dashboard/admin/courses', icon: '📚' },
+            { title: 'Applications', desc: 'View and manage candidate applications', href: '/dashboard/admin/applications', icon: '📝' },
+            { title: 'Exam Sessions', desc: 'Create exams, publish results, process appeals', href: '/dashboard/admin/exams', icon: '📋' },
+            { title: 'Portfolio Completion', desc: 'Monitor portfolio submissions across candidates', href: '/dashboard/admin/portfolio', icon: '📁' },
+            { title: 'Reports & Analytics', desc: 'Enrolment, pass rates, portfolio completion', href: '/dashboard/admin/reports', icon: '📊' },
+            { title: 'Audit Log', desc: 'View system activity and user action history', href: '/dashboard/admin/audit', icon: '🔍' },
+          ].map(card => (
+            <button key={card.title}
+              onClick={() => router.push(card.href)}
+              className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left hover:shadow-md transition flex items-start gap-4">
+              <div className="text-3xl">{card.icon}</div>
+              <div>
+                <h3 className="font-semibold text-gray-800">{card.title}</h3>
+                <p className="text-sm text-gray-500 mt-1">{card.desc}</p>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   )
