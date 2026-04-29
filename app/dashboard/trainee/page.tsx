@@ -100,7 +100,6 @@ export default function TraineeDashboard() {
             </div>
             <div className="flex items-center justify-between mt-4">
               <span className="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">{courses.length} courses open</span>
-              <span className="text-xs font-semibold" style={{ color: '#7a1515' }}>Open →</span>
             </div>
           </button>
 
@@ -118,7 +117,6 @@ export default function TraineeDashboard() {
               <span className="text-xs px-3 py-1 rounded-full bg-green-100 text-green-700 font-medium">
                 {myApplications.filter(a => a.status === 'approved').length} enrolled
               </span>
-              <span className="text-xs font-semibold" style={{ color: '#7a1515' }}>Open →</span>
             </div>
           </button>
 
@@ -137,7 +135,6 @@ export default function TraineeDashboard() {
                 <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700 font-medium">Cases</span>
                 <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700 font-medium">Procedures</span>
               </div>
-              <span className="text-xs font-semibold" style={{ color: '#7a1515' }}>Open →</span>
             </div>
           </button>
 
@@ -156,7 +153,6 @@ export default function TraineeDashboard() {
                 <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">Register</span>
                 <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">Results</span>
               </div>
-              <span className="text-xs font-semibold" style={{ color: '#7a1515' }}>Open →</span>
             </div>
           </button>
         </div>
