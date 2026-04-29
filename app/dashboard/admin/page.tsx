@@ -114,7 +114,7 @@ export default function AdminDashboard() {
     { title: 'Portfolio Completion', desc: 'Monitor portfolio submissions across candidates', href: '/dashboard/admin/portfolio', icon: '📁' },
     { title: 'Reports & Analytics', desc: 'Enrolment, pass rates, portfolio completion', href: '/dashboard/admin/reports', icon: '📊' },
     { title: 'Audit Log', desc: 'View system activity and user action history', href: '/dashboard/admin/audit', icon: '🔍' },
-    { title: 'Candidate Management', desc: 'Create and manage candidate accounts', href: '/dashboard/admin/candidates', icon: '👤' },
+    { title: 'Candidate Enrolment', desc: 'Create and manage candidate accounts', href: '/dashboard/admin/candidates', icon: '👤' },
   ].map(card => (
     <button key={card.title}
       onClick={() => router.push(card.href)}
