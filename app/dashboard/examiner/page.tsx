@@ -254,6 +254,7 @@ function EntryCard({ entry, onSubmit }: { entry: any, onSubmit: any }) {
   const [grade, setGrade] = useState(entry.grade || '')
   const [saving, setSaving] = useState(false)
   const [expanded, setExpanded] = useState(entry.status === 'submitted')
+  const [toast, setToast] = useState('')
 
   const grades = ['Excellent', 'Good', 'Satisfactory', 'Unsatisfactory']
 
@@ -262,10 +263,19 @@ function EntryCard({ entry, onSubmit }: { entry: any, onSubmit: any }) {
     setSaving(true)
     await onSubmit(entry.id, feedback, grade, status)
     setSaving(false)
+    setExpanded(false)
+    setToast(status === 'approved' ? 'Entry approved and signed off successfully!' : 'Entry rejected successfully!')
+    setTimeout(() => setToast(''), 3000)
   }
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {toast && (
+        <div className="px-5 py-3 text-white text-sm font-medium" style={{ background: '#15803D' }}>
+          ✓ {toast}
+        </div>
+      )}
+
       {/* Entry Header - always visible */}
       <div className="p-5 cursor-pointer" onClick={() => setExpanded(!expanded)}>
         <div className="flex items-start justify-between">
@@ -357,7 +367,7 @@ function EntryCard({ entry, onSubmit }: { entry: any, onSubmit: any }) {
               <textarea
                 value={feedback}
                 onChange={e => setFeedback(e.target.value)}
-                placeholder="Provide detailed feedback on the portfolio entry, including strengths, areas for improvement, and recommendations..."
+                placeholder="Provide detailed feedback on the portfolio entry..."
                 rows={4}
                 className="mt-1.5 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800" />
             </div>
