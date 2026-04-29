@@ -29,6 +29,7 @@ export default function CandidatesPage() {
   async function createCandidate() {
     if (!form.full_name || !form.email || !form.nic || !form.username || !form.password) return
     setSaving(true)
+    const { data: { user } } = await supabase.auth.getUser()
     await supabase.from('candidate_registrations').insert({
       full_name: form.full_name,
       email: form.email,
@@ -41,13 +42,13 @@ export default function CandidatesPage() {
       status: 'active'
     })
     await supabase.from('activity_log').insert({
-      user_id: (await supabase.auth.getUser()).data.user?.id,
-      action: `Created candidate account for ${form.full_name} (${form.email})`
+      user_id: user?.id,
+      action: `Created candidate account for ${form.full_name}`
     })
     setForm({ full_name: '', email: '', nic: '', contact: '', qualification: '', username: '', password: '' })
     setShowForm(false)
     setSaving(false)
-    showToast(`Account created for ${form.full_name} — credentials ready to share`)
+    showToast(`Account created for ${form.full_name}`)
     loadCandidates()
   }
 
@@ -79,14 +80,12 @@ export default function CandidatesPage() {
           </button>
         </div>
 
-        {/* Create Form */}
         {showForm && (
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-bold text-gray-800">New Candidate Account</h3>
               <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Full Name *</label>
@@ -131,11 +130,9 @@ export default function CandidatesPage() {
                   placeholder="Temp@1234" type="password" />
               </div>
             </div>
-
             <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700 mt-4">
-              ℹ️ The candidate will receive their login credentials via email. They must change their password on first login.
+              The candidate will receive their login credentials via email. They must change their password on first login.
             </div>
-
             <div className="flex gap-3 mt-5">
               <button onClick={createCandidate}
                 disabled={saving || !form.full_name || !form.email || !form.nic || !form.username || !form.password}
@@ -151,12 +148,10 @@ export default function CandidatesPage() {
           </div>
         )}
 
-        {/* Candidates List */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between" style={{ background: '#fdf5f5' }}>
+          <div className="px-6 py-4 border-b border-gray-100" style={{ background: '#fdf5f5' }}>
             <h3 className="font-semibold text-gray-800">Registered Candidates ({candidates.length})</h3>
           </div>
-
           {candidates.length === 0 ? (
             <div className="p-10 text-center text-gray-400">
               <p className="text-4xl mb-3">👤</p>
@@ -188,9 +183,7 @@ export default function CandidatesPage() {
                     <td className="px-6 py-3 text-sm text-gray-600">{c.qualification || '—'}</td>
                     <td className="px-6 py-3 text-sm text-gray-600">{c.username}</td>
                     <td className="px-6 py-3">
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
-                        {c.status}
-                      </span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">{c.status}</span>
                     </td>
                   </tr>
                 ))}
