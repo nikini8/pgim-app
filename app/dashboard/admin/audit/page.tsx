@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 export default function AuditLogPage() {
   const [logs, setLogs] = useState<any[]>([])
@@ -27,18 +29,42 @@ export default function AuditLogPage() {
   )
 
   function exportCSV() {
-    const rows = logs.map(l => `${l.profiles?.full_name},${l.profiles?.role},${l.action},${new Date(l.created_at).toLocaleString()}`)
-    const csv = ['User,Role,Action,Timestamp', ...rows].join('\n')
+    const rows = filtered.map(l => `${new Date(l.created_at).toLocaleString()},${l.profiles?.full_name},${l.profiles?.role},${l.action}`)
+    const csv = ['Timestamp,User,Role,Action', ...rows].join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = 'audit-log.csv'; a.click()
+  }
+
+  function exportPDF() {
+    const doc = new jsPDF()
+    doc.setFontSize(16); doc.setTextColor(122, 21, 21)
+    doc.text('PGIM Information Management System', 14, 15)
+    doc.setFontSize(12); doc.setTextColor(0, 0, 0)
+    doc.text('Audit Log Report', 14, 25)
+    doc.setFontSize(9); doc.setTextColor(100, 100, 100)
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}`, 14, 32)
+    autoTable(doc, {
+      startY: 38,
+      head: [['Timestamp', 'User', 'Role', 'Action']],
+      body: filtered.map(l => [
+        new Date(l.created_at).toLocaleString(),
+        l.profiles?.full_name || '',
+        l.profiles?.role || '',
+        l.action || ''
+      ]),
+      headStyles: { fillColor: [122, 21, 21], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [249, 245, 240] },
+      styles: { fontSize: 8, cellPadding: 3 },
+    })
+    doc.save('audit-log.pdf')
   }
 
   return (
     <div className="min-h-screen" style={{ background: '#f9f5f0' }}>
       <header className="text-white px-8 py-4 flex items-center justify-between shadow" style={{ background: 'linear-gradient(135deg, #7a1515, #4a0a0a)' }}>
         <div className="flex items-center gap-3">
-          <Image src="/logo-user-transparent-v1.png" alt="PGIM" width={45} height={45} className="rounded-full object-cover" />
+          <Image src="/logo.png" alt="PGIM" width={45} height={45} />
           <div><h1 className="font-bold text-lg">PGIM</h1><p className="text-xs opacity-75">Information Management System</p></div>
         </div>
         <button onClick={() => router.push('/dashboard/admin')} className="text-xs px-3 py-1 rounded border border-white/30 hover:bg-white/10">← Back to Dashboard</button>
@@ -50,18 +76,22 @@ export default function AuditLogPage() {
             <h2 className="text-2xl font-bold" style={{ color: '#7a1515' }}>Audit Log</h2>
             <p className="text-sm text-gray-500 mt-1">System activity and user action history</p>
           </div>
-          <button onClick={exportCSV} className="text-sm px-4 py-2 rounded-lg text-white font-medium" style={{ background: '#c4a020' }}>
-            Export CSV
-          </button>
+          <div className="flex gap-2">
+            <button onClick={exportCSV} className="text-sm px-4 py-2 rounded-lg text-white font-medium" style={{ background: '#c4a020' }}>
+              Export CSV
+            </button>
+            <button onClick={exportPDF} className="text-sm px-4 py-2 rounded-lg text-white font-medium" style={{ background: '#7a1515' }}>
+              Export PDF
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
             <input value={filter} onChange={e => setFilter(e.target.value)}
               placeholder="Search by user or action..."
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-800" />
           </div>
-
           <table className="w-full">
             <thead style={{ background: '#f3ece8' }}>
               <tr>

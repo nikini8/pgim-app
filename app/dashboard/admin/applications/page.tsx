@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<any[]>([])
@@ -14,30 +16,55 @@ export default function ApplicationsPage() {
   async function loadApplications() {
     const { data } = await supabase
       .from('applications')
-      .select(`*, profiles(full_name, email), courses(name)`)
-      .order('created_at', {ascending: false})
+      .select('*, profiles(full_name, email), courses(name)')
+      .order('created_at', { ascending: false })
     setApplications(data || [])
     setLoading(false)
   }
 
   async function updateStatus(id: string, status: string) {
-    await supabase.from('applications').update({status}).eq('id', id)
+    await supabase.from('applications').update({ status }).eq('id', id)
     loadApplications()
   }
 
   function exportCSV() {
     const rows = applications.map(a => `${a.profiles?.full_name},${a.profiles?.email},${a.courses?.name},${a.status},${a.payment_status}`)
     const csv = ['Name,Email,Course,Status,Payment', ...rows].join('\n')
-    const blob = new Blob([csv], {type: 'text/csv'})
+    const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = 'applications.csv'; a.click()
   }
 
+  function exportPDF() {
+    const doc = new jsPDF()
+    doc.setFontSize(16); doc.setTextColor(122, 21, 21)
+    doc.text('PGIM Information Management System', 14, 15)
+    doc.setFontSize(12); doc.setTextColor(0, 0, 0)
+    doc.text('Applications Report', 14, 25)
+    doc.setFontSize(9); doc.setTextColor(100, 100, 100)
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}`, 14, 32)
+    autoTable(doc, {
+      startY: 38,
+      head: [['Candidate', 'Email', 'Course', 'Status', 'Payment']],
+      body: applications.map(a => [
+        a.profiles?.full_name || '',
+        a.profiles?.email || '',
+        a.courses?.name || '',
+        a.status || '',
+        a.payment_status || ''
+      ]),
+      headStyles: { fillColor: [122, 21, 21], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [249, 245, 240] },
+      styles: { fontSize: 9, cellPadding: 3 },
+    })
+    doc.save('applications.pdf')
+  }
+
   return (
-    <div className="min-h-screen" style={{background:'#f9f5f0'}}>
-      <header className="text-white px-8 py-4 flex items-center justify-between shadow" style={{background:'linear-gradient(135deg, #7a1515, #4a0a0a)'}}>
+    <div className="min-h-screen" style={{ background: '#f9f5f0' }}>
+      <header className="text-white px-8 py-4 flex items-center justify-between shadow" style={{ background: 'linear-gradient(135deg, #7a1515, #4a0a0a)' }}>
         <div className="flex items-center gap-3">
-          <Image src="/logo-user-transparent-v1.png" alt="PGIM" width={45} height={45} className="rounded-full object-cover" />
+          <Image src="/logo.png" alt="PGIM" width={45} height={45} />
           <div><h1 className="font-bold text-lg">PGIM</h1><p className="text-xs opacity-75">Information Management System</p></div>
         </div>
         <button onClick={() => router.push('/dashboard/admin')} className="text-xs px-3 py-1 rounded border border-white/30 hover:bg-white/10">← Back to Dashboard</button>
@@ -45,21 +72,29 @@ export default function ApplicationsPage() {
 
       <div className="max-w-6xl mx-auto px-8 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold" style={{color:'#7a1515'}}>Applications</h2>
-          <button onClick={exportCSV} className="text-sm px-4 py-2 rounded-lg text-white font-medium" style={{background:'#c4a020'}}>
-            Export CSV
-          </button>
+          <div>
+            <h2 className="text-2xl font-bold" style={{ color: '#7a1515' }}>Applications</h2>
+            <p className="text-sm text-gray-500 mt-1">View and manage candidate course applications</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={exportCSV} className="text-sm px-4 py-2 rounded-lg text-white font-medium" style={{ background: '#c4a020' }}>
+              Export CSV
+            </button>
+            <button onClick={exportPDF} className="text-sm px-4 py-2 rounded-lg text-white font-medium" style={{ background: '#7a1515' }}>
+              Export PDF
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <table className="w-full">
-            <thead style={{background:'#f3ece8'}}>
+            <thead style={{ background: '#f3ece8' }}>
               <tr>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-600">Candidate</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-600">Course</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-600">Status</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-600">Payment</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-600">Actions</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-700">Candidate</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-700">Course</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-700">Status</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-700">Payment</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-700">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -83,11 +118,13 @@ export default function ApplicationsPage() {
                       {app.payment_status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 flex gap-2">
-                    <button onClick={() => updateStatus(app.id, 'approved')}
-                      className="text-xs px-3 py-1 rounded bg-green-600 text-white">Approve</button>
-                    <button onClick={() => updateStatus(app.id, 'rejected')}
-                      className="text-xs px-3 py-1 rounded bg-red-600 text-white">Reject</button>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <button onClick={() => updateStatus(app.id, 'approved')}
+                        className="text-xs px-3 py-1.5 rounded-lg bg-green-600 text-white font-medium">Approve</button>
+                      <button onClick={() => updateStatus(app.id, 'rejected')}
+                        className="text-xs px-3 py-1.5 rounded-lg bg-red-600 text-white font-medium">Reject</button>
+                    </div>
                   </td>
                 </tr>
               ))}
